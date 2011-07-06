@@ -1,31 +1,53 @@
 
-class Range
-    def *(rhs)
-        case rhs
-            when Range
-                DRange.new([self, rhs])
-            when DRange
-                rhs*self
-        end
-    end
-end # class DRange
-
 # Taken from Vector class
 # TODO: make more general
 class Array
-    def map2(v) # :yield: e1, e2
-        if(size != v.size)
+    # Like map, but maps pairs of entries from two array-like objects to a single array of results.
+    # FIXME: This is not an operation on a single array, so it makes les sense for it to be
+    # implemented as an instance method. This also limits it to operation with actual arrays,
+    # when implementing it as a standalone function would allow it to work with any array-like
+    # objects.
+    def map2(rhs) # :yield: e1, e2
+        if(size != rhs.size)
             raise "Dimensions don't match" 
         end
         if(block_given?)
             Array.new(size) do |i|
-                yield(self[i], v[i])
+                yield(self[i], rhs[i])
             end
         else
-            return to_enum(:collect2, v)
+            return to_enum(:map2, rhs)
         end
-    end # def collect2()
+    end # def map2()
 end # class Array
+
+def map2(lhs, rhs) # :yield: e1, e2
+    if(lhs.size != rhs.size)
+        raise "Dimensions don't match" 
+    end
+    if(block_given?)
+        Array.new(lhs.size) do |i|
+            yield(lhs[i], rhs[i])
+        end
+    else
+        return lhs.to_enum(:map2, rhs)
+    end
+end # def map2()
+
+
+class Range
+    def *(rhs)
+        case rhs
+        when Range
+            DRange.new([self, rhs])
+        when DRange
+            DRange.new([self] + rhs.axes)
+        else
+            raise "Type mismatch"
+        end
+    end
+end # class DRange
+
 
 class DRange
     attr_reader :axes
@@ -42,12 +64,13 @@ class DRange
     def *(rhs)
         # FIXME: need to dup ranges?
         case rhs
-            when Range
-                @axes.push(rhs)
-            when DRange
-                @axes = @axes + rhs.axes
+        when Range
+            DRange.new(@axes + [rhs])
+        when DRange
+            DRange.new(@axes + rhs.axes)
+        else
+            raise "Type mismatch"
         end
-        self
     end
     
     def to_s()
@@ -62,7 +85,7 @@ class DRange
     # ===: is element of
     
     def ===(pt)
-        @axes.map2(pt){|a, b| a === b}.include(false) == false
+        map2(@axes, pt){|a, b| a === b}.include(false) == false
     end
     
     def begin()
