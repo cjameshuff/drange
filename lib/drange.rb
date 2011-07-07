@@ -43,7 +43,7 @@ class Range
         when DRange
             DRange.new([self] + rhs.axes)
         else
-            raise "Type mismatch"
+            raise "Type mismatch: #{rhs.inspect()}"
         end
     end
 end # class DRange
@@ -52,6 +52,8 @@ end # class DRange
 class DRange
     attr_reader :axes
     
+    # TODO:
+    # Figure out if current handling of exclusive ranges per dimension is adequate
     def initialize(axes)
         @axes = axes
     end
@@ -62,14 +64,13 @@ class DRange
     end
     
     def *(rhs)
-        # FIXME: need to dup ranges?
         case rhs
         when Range
             DRange.new(@axes + [rhs])
         when DRange
             DRange.new(@axes + rhs.axes)
         else
-            raise "Type mismatch"
+            raise "Type mismatch: #{rhs.inspect()}"
         end
     end
     
@@ -85,7 +86,7 @@ class DRange
     # ===: is element of
     
     def ===(pt)
-        map2(@axes, pt){|a, b| a === b}.include(false) == false
+        map2(@axes, pt){|a, b| a === b}.include?(false) == false
     end
     
     def begin()
@@ -130,8 +131,13 @@ class DRange
         @axes.hash
     end
     
-    # member?
-    # include?
+    def member?(val)
+        self === val
+    end
+    
+    def include?(val)
+        self === val
+    end
     
     def inspect()
         @axes.map{|a| a.inspect}

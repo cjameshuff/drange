@@ -3,7 +3,7 @@ require "drange"
 
 class TestDRange < Test::Unit::TestCase
     def test_sanity()
-    true
+        true
     end
     
     def test_map2()
@@ -30,7 +30,35 @@ class TestDRange < Test::Unit::TestCase
         assert_equal("[1..3, 4..6]", ((1..3)*(4..6)).to_s)
     end
     
-    # TODO: ==, ===, begin, end, first, last, construct as exclusive, cover?, eql?, exclude_end?,
-    # member?, include?, min, max, each, step
+    def test_eq()
+        assert((1..3)*(4..6) == (1..3)*(4..6))
+        assert((1..3)*(4..6) != (1..3)*(4..7))
+    end
+    
+    def test_include()
+        dr = (1..3)*(4..6)
+        assert(dr === [1, 5])
+        assert(dr.include?([1, 5]))
+        assert(dr.member?([1, 5]))
+    end
+    
+    def test_begin_end_first_last()
+        dr = (1..3)*(4..6)
+        assert_equal([1, 4], dr.begin)
+        assert_equal([1, 4], dr.first)
+        assert_equal([3, 6], dr.end)
+        assert_equal([3, 6], dr.last)
+    end
+    
+    # cover?
+    # eql?, exclude_end?,
+    
+    def test_minmax()
+        dr = (1..3)*(4..6)*(7..9)
+        assert_equal([1, 4, 7], dr.min)
+        assert_equal([3, 6, 9], dr.max)
+    end
+    
+    # each, step
 end # class TestDRange
 
