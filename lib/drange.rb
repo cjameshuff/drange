@@ -54,6 +54,7 @@ class DRange
     
     # TODO:
     # Figure out if current handling of exclusive ranges per dimension is adequate
+    # construct as exclusive, mix inclusive and exclusive...
     def initialize(axes)
         @axes = axes
     end
@@ -82,9 +83,6 @@ class DRange
         @axes == rhs.axes
     end
     
-    # construct as exclusive, mix inclusive and exclusive
-    # ===: is element of
-    
     def ===(pt)
         map2(@axes, pt){|a, b| a === b}.include?(false) == false
     end
@@ -97,7 +95,9 @@ class DRange
         @axes.map{|a| a.end}
     end
     
-    # cover?: true if object (array of coordinates) is in range
+    def cover?(pt)
+        map2(@axes, pt){|a, b| a === b}.include?(false) == false
+    end
     
     # TODO: enumerator
     def each()
@@ -116,8 +116,13 @@ class DRange
         end
     end
     
-    # eql?
-    # exclude_end?
+    def eql?(rhs)
+        @axes == rhs.axes
+    end
+    
+    def exclude_end?()
+        @axes.map{|a| a.exclude_end?}
+    end
     
     def first()
         @axes.map{|a| a.first}

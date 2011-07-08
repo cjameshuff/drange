@@ -32,6 +32,7 @@ class TestDRange < Test::Unit::TestCase
     
     def test_eq()
         assert((1..3)*(4..6) == (1..3)*(4..6))
+        assert(((1..3)*(4..6)).eql?((1..3)*(4..6)))
         assert((1..3)*(4..6) != (1..3)*(4..7))
     end
     
